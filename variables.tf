@@ -10,20 +10,9 @@ variable "delete_all_secret_associations" {
   description = "Delete the secret associations"
 }
 
-variable "mount" {
-  type        = string
-  description = "Vault mount path for the secret to sync to AWS SM."
-}
-
-variable "mount_accessor" {
-  type        = string
-  description = "Vault mount accessor for the secret to sync to AWS SM."
-  default     = ""
-}
-
 variable "name" {
   type        = string
-  description = "Name of the publication."
+  description = "Prefix name for the destination"
 }
 
 variable "region" {
@@ -33,12 +22,23 @@ variable "region" {
 }
 
 variable "associate_secrets" {
-  type        = list(string)
-  description = "List of secrets to sync to AWS SM"
+  type = map(
+    object({
+      mount       = string
+      secret_name = list(string)
+    })
+  )
+  default     = {}
+  description = "Map of vault kv to create secret sync association"
 }
 
 variable "unassociate_secrets" {
-  type        = list(string)
-  default     = []
-  description = "List of secrets to unassociate from AWS SM"
+  type = map(
+    object({
+      mount       = string
+      secret_name = list(string)
+    })
+  )
+  default     = {}
+  description = "Map of vault kv to remove secret sync association"
 }

@@ -1,7 +1,27 @@
 locals {
   sync_base_path          = "sys/sync/destinations"
-  destination_name        = "${var.name}-${random_id.vault_secretsync.hex}"
+  destination_name        = "${var.name}-${var.region}-${random_id.vault_secretsync.hex}"
   delete_sync_destination = alltrue([var.delete_all_secret_associations, var.delete_sync_destination])
+
+  associate_secrets = flatten([
+    for app_name, secret in var.associate_secrets : [
+      for secret_name in secret.secret_name : {
+        app_name    = app_name
+        mount       = secret.mount
+        secret_name = secret_name
+      }
+    ]
+  ])
+
+  unassociate_secrets = flatten([
+    for app_name, secret in var.unassociate_secrets : [
+      for secret_name in secret.secret_name : {
+        app_name    = app_name
+        mount       = secret.mount
+        secret_name = secret_name
+      }
+    ]
+  ])
 }
 
 #######################################
@@ -26,7 +46,6 @@ module "iam_user_secretsync" {
   force_destroy                 = true
 }
 
-# Access key should be rotated every 90 days
 resource "aws_iam_access_key" "vault_secretsync" {
   user = module.iam_user_secretsync.iam_user_name
 
@@ -39,9 +58,9 @@ resource "aws_iam_access_key" "vault_secretsync" {
   }
 }
 
-# Trigger rotation every 60 days
+# Trigger access key rotation every 90 days
 resource "time_rotating" "iam_user_secretsync_access_key" {
-  rotation_days = 60
+  rotation_days = 90
 }
 
 resource "null_resource" "rotate_access_key" {
@@ -66,7 +85,7 @@ data "aws_iam_policy_document" "vault_ent_secrets_manager_access" {
       "secretsmanager:UntagResource",
     ]
     resources = [
-      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:vault/${var.mount_accessor}/*"
+      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:vault/*"
     ]
   }
 }
@@ -96,7 +115,7 @@ module "iam_group_secretsync" {
 #######################################
 
 # Create Vault -> AWS SM destination
-# Ideally only need to create one destination per AWS account
+# Only need to create one destination per AWS region
 resource "vault_generic_endpoint" "create_destination_sync" {
   count = local.delete_sync_destination ? 0 : 1
 
@@ -126,13 +145,13 @@ resource "time_sleep" "wait_5_seconds" {
 # Expect to have multiple secrets to associate
 # Assume that the secret to associate will have the same name
 resource "vault_generic_endpoint" "create_association_sync" {
-  for_each = toset(var.associate_secrets)
+  for_each = { for secret in local.associate_secrets : "${secret.app_name}-${secret.secret_name}" => secret }
 
   path = "${local.sync_base_path}/aws-sm/${local.destination_name}/associations/set"
 
   data_json = jsonencode({
-    mount       = var.mount
-    secret_name = each.value
+    mount       = each.value.mount
+    secret_name = each.value.secret_name
   })
 
   disable_delete       = true
@@ -146,13 +165,13 @@ resource "vault_generic_endpoint" "create_association_sync" {
 
 # Remove Some Vault -> AWS SM association
 resource "vault_generic_endpoint" "remove_some_association_sync" {
-  for_each = toset(var.unassociate_secrets)
+  for_each = { for secret in local.unassociate_secrets : "${secret.app_name}-${secret.secret_name}" => secret }
 
   path = "${local.sync_base_path}/aws-sm/${local.destination_name}/associations/remove"
 
   data_json = jsonencode({
-    mount       = var.mount
-    secret_name = each.value
+    mount       = each.value.mount
+    secret_name = each.value.secret_name
   })
 
   disable_delete       = true
@@ -162,13 +181,13 @@ resource "vault_generic_endpoint" "remove_some_association_sync" {
 
 # Remove ALL Vault -> AWS SM destination
 resource "vault_generic_endpoint" "remove_all_association_sync" {
-  for_each = var.delete_all_secret_associations ? toset(var.associate_secrets) : toset([])
+  for_each = var.delete_all_secret_associations ? { for secret in local.associate_secrets : "${secret.app_name}-${secret.secret_name}" => secret } : {}
 
   path = "${local.sync_base_path}/aws-sm/${local.destination_name}/associations/remove"
 
   data_json = jsonencode({
-    mount       = var.mount
-    secret_name = each.value
+    mount       = each.value.mount
+    secret_name = each.value.secret_name
   })
 
   disable_delete       = true

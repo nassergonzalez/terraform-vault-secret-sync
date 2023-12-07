@@ -48,14 +48,12 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_associate_secrets"></a> [associate\_secrets](#input\_associate\_secrets) | List of secrets to sync to AWS SM | `list(string)` | n/a | yes |
+| <a name="input_associate_secrets"></a> [associate\_secrets](#input\_associate\_secrets) | Map of vault kv to create secret sync association | <pre>map(<br>    object({<br>      mount       = string<br>      secret_name = list(string)<br>    })<br>  )</pre> | `{}` | no |
 | <a name="input_delete_all_secret_associations"></a> [delete\_all\_secret\_associations](#input\_delete\_all\_secret\_associations) | Delete the secret associations | `bool` | `false` | no |
 | <a name="input_delete_sync_destination"></a> [delete\_sync\_destination](#input\_delete\_sync\_destination) | Delete the sync destination. Secret associations must be removed beforehand. | `bool` | `false` | no |
-| <a name="input_mount"></a> [mount](#input\_mount) | Vault mount path for the secret to sync to AWS SM. | `string` | n/a | yes |
-| <a name="input_mount_accessor"></a> [mount\_accessor](#input\_mount\_accessor) | Vault mount accessor for the secret to sync to AWS SM. | `string` | `""` | no |
-| <a name="input_name"></a> [name](#input\_name) | Name of the publication. | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | Prefix name for the destination | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region | `string` | `"ap-southeast-1"` | no |
-| <a name="input_unassociate_secrets"></a> [unassociate\_secrets](#input\_unassociate\_secrets) | List of secrets to unassociate from AWS SM | `list(string)` | `[]` | no |
+| <a name="input_unassociate_secrets"></a> [unassociate\_secrets](#input\_unassociate\_secrets) | Map of vault kv to remove secret sync association | <pre>map(<br>    object({<br>      mount       = string<br>      secret_name = list(string)<br>    })<br>  )</pre> | `{}` | no |
 
 ## Outputs
 
