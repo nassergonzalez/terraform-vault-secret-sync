@@ -132,8 +132,8 @@ resource "vault_generic_endpoint" "create_destination_sync" {
   ignore_absent_fields = true
 }
 
-resource "time_sleep" "wait_5_seconds" {
-  create_duration = "5s"
+resource "time_sleep" "wait_for_destination_sync" {
+  create_duration = "10s"
 
   depends_on = [
     vault_generic_endpoint.create_destination_sync,
@@ -157,7 +157,7 @@ resource "vault_generic_endpoint" "create_association_sync" {
   ignore_absent_fields = true
 
   depends_on = [
-    time_sleep.wait_5_seconds,
+    time_sleep.wait_for_destination_sync,
   ]
 }
 
