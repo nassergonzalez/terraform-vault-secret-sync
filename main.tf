@@ -1,6 +1,6 @@
 locals {
   sync_base_path          = "sys/sync/destinations"
-  destination_name        = "${var.name}-${var.region}-${random_id.vault_secretsync.hex}"
+  destination_name        = "${var.name}-${var.region}-${random_id.this.hex}"
   delete_sync_destination = alltrue([var.delete_all_secret_associations, var.delete_sync_destination])
 
   associate_secrets = flatten([
@@ -30,7 +30,7 @@ locals {
 #                                     #
 #######################################
 
-resource "random_id" "vault_secretsync" {
+resource "random_id" "this" {
   byte_length = 8
 }
 
@@ -38,7 +38,7 @@ module "iam_user_secretsync" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-user"
   version = "~> 5.32.0"
 
-  name = "vault-ent-secret-sync-${random_id.vault_secretsync.hex}"
+  name = local.destination_name
 
   create_iam_access_key         = false
   create_iam_user_login_profile = false
@@ -94,7 +94,7 @@ module "iam_group_secretsync" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-group-with-policies"
   version = "~> 5.32.0"
 
-  name         = "vault-ent-secret-sync-${random_id.vault_secretsync.hex}"
+  name         = "vault-ent-secret-sync-${random_id.this.hex}"
   create_group = true
 
   enable_mfa_enforcement = false
@@ -102,7 +102,7 @@ module "iam_group_secretsync" {
 
   custom_group_policies = [
     {
-      name   = "vault-ent-secret-sync-${random_id.vault_secretsync.hex}"
+      name   = "vault-ent-secret-sync-${random_id.this.hex}"
       policy = data.aws_iam_policy_document.vault_ent_secrets_manager_access.json
     }
   ]
@@ -142,8 +142,6 @@ resource "time_sleep" "wait_5_seconds" {
 
 # Create Vault -> AWS SM association
 # https://developer.hashicorp.com/vault/api-docs/system/secrets-sync#set-association
-# Expect to have multiple secrets to associate
-# Assume that the secret to associate will have the same name
 resource "vault_generic_endpoint" "create_association_sync" {
   for_each = { for secret in local.associate_secrets : "${secret.app_name}-${secret.secret_name}" => secret }
 
