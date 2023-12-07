@@ -1,4 +1,4 @@
-# Terraform Modules Template
+# Vault Enterprise Secret Sync
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
