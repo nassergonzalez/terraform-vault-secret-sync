@@ -1,5 +1,108 @@
 # Vault Enterprise Secret Sync
 
+Create and manage [vault enterprise secret sync](https://developer.hashicorp.com/vault/docs/sync).  
+
+## Note
+- This module currently only support [AWS Secrets Manager destination](https://developer.hashicorp.com/vault/docs/sync/awssm).  
+Other [secret sync destinations](https://developer.hashicorp.com/vault/docs/sync#destinations) will be supported in the future.
+- All the vault secret associations must be removed before secret sync destination can be removed. Vault will return this error message if secret association still exist: `store cannot be deleted because it is still managing secrets`.
+
+## Usage
+Create secret sync destination and association:
+```terraform
+module "vault_secretsync" {
+  source  = "SPHTech-Platform/vault-enterprise-secret-sync"
+  version = "0.1.0"
+
+  name = "vault-ss"
+
+  associate_secrets = {
+    foo = {
+      mount       = "mount_foo"
+      secret_name = "foo_secret"
+    }
+    hello = {
+      mount       = "mount_hello"
+      secret_name = "hello_secret"
+    }
+  }
+}
+```
+
+Remove some vault secret from association
+```terraform
+module "vault_secretsync" {
+  source  = "SPHTech-Platform/vault-enterprise-secret-sync"
+  version = "0.1.0"
+
+  name = "vault-ss"
+
+  associate_secrets = {
+    foo = {
+      mount       = "mount_foo"
+      secret_name = "foo_secret"
+    }
+    hello = {
+      mount       = "mount_hello"
+      secret_name = "hello_secret"
+    }
+  }
+
+  unassociate_secrets = {
+    hello = {
+      mount       = "mount_hello"
+      secret_name = "hello_secret"
+    }
+  }
+}
+```
+
+Remove all vault secrets from association
+```terraform
+module "vault_secretsync" {
+  source  = "SPHTech-Platform/vault-enterprise-secret-sync"
+  version = "0.1.0"
+
+  name = "vault-ss"
+
+  associate_secrets = {
+    foo = {
+      mount       = "mount_foo"
+      secret_name = "foo_secret"
+    }
+    hello = {
+      mount       = "mount_hello"
+      secret_name = "hello_secret"
+    }
+  }
+
+  delete_all_secret_associations = true
+  delete_sync_destination	     = true
+}
+```
+
+Remove vault secret sync destination
+```terraform
+module "vault_secretsync" {
+  source  = "SPHTech-Platform/vault-enterprise-secret-sync"
+  version = "0.1.0"
+
+  name = "vault-ss"
+
+  associate_secrets = {
+    foo = {
+      mount       = "mount_foo"
+      secret_name = "foo_secret"
+    }
+    hello = {
+      mount       = "mount_hello"
+      secret_name = "hello_secret"
+    }
+  }
+
+  delete_all_secret_associations = true
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
