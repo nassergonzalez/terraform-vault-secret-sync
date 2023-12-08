@@ -1,6 +1,5 @@
 # Vault Enterprise Secret Sync
-
-Create and manage [vault enterprise secret sync](https://developer.hashicorp.com/vault/docs/sync). 
+Create and manage [vault enterprise secret sync](https://developer.hashicorp.com/vault/docs/sync).
 
 ## Note
 - This module currently only support [AWS Secrets Manager destination](https://developer.hashicorp.com/vault/docs/sync/awssm). Other [secret sync destinations](https://developer.hashicorp.com/vault/docs/sync#destinations) will be supported in the future.
@@ -28,7 +27,7 @@ module "vault_secretsync" {
 }
 ```
 
-Remove some vault secret from association
+Remove some vault secret from association:
 ```terraform
 module "vault_secretsync" {
   source  = "SPHTech-Platform/vault-enterprise-secret-sync"
@@ -56,7 +55,7 @@ module "vault_secretsync" {
 }
 ```
 
-Remove all vault secrets from association
+Remove all vault secrets from association:
 ```terraform
 module "vault_secretsync" {
   source  = "SPHTech-Platform/vault-enterprise-secret-sync"
@@ -80,7 +79,7 @@ module "vault_secretsync" {
 }
 ```
 
-Remove vault secret sync destination
+Remove vault secret sync destination:
 ```terraform
 module "vault_secretsync" {
   source  = "SPHTech-Platform/vault-enterprise-secret-sync"
