@@ -17,7 +17,7 @@ resource "vault_generic_endpoint" "create_destination_sync" {
     region            = var.region
   })
 
-  disable_delete       = false # this works and removes the stuff but we need to make sure that all associations are removed first
+  disable_delete       = false
   disable_read         = true
   ignore_absent_fields = true
 }
@@ -30,8 +30,7 @@ resource "time_sleep" "wait_for_destination_sync" {
   ]
 }
 
-# Create Vault -> AWS SM association
-# https://developer.hashicorp.com/vault/api-docs/system/secrets-sync#set-association
+# Create Vault Secret -> AWS SM association
 resource "vault_generic_endpoint" "create_association_sync" {
   for_each = { for secret in local.associate_secrets : "${secret.app_name}-${secret.secret_name}" => secret }
 
@@ -51,7 +50,7 @@ resource "vault_generic_endpoint" "create_association_sync" {
   ]
 }
 
-# Remove Some Vault -> AWS SM association
+# Remove Some Vault Secret -> AWS SM association
 resource "vault_generic_endpoint" "remove_some_association_sync" {
   for_each = { for secret in local.unassociate_secrets : "${secret.app_name}-${secret.secret_name}" => secret }
 
@@ -67,7 +66,7 @@ resource "vault_generic_endpoint" "remove_some_association_sync" {
   ignore_absent_fields = true
 }
 
-# Remove ALL Vault -> AWS SM destination
+# Remove ALL Vault Secret -> AWS SM destination
 resource "vault_generic_endpoint" "remove_all_association_sync" {
   for_each = var.delete_all_secret_associations ? { for secret in local.associate_secrets : "${secret.app_name}-${secret.secret_name}" => secret } : {}
 
