@@ -1,4 +1,4 @@
-# Vault Enterprise Secret Sync
+# Vault Enterprise Secret Sync Change to trigger PR
 Create and manage [Vault Enterprise Secret Sync](https://developer.hashicorp.com/vault/docs/sync).
 
 ## Note
